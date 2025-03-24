@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Linear Regression - Football Prediction System</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .header {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 15px rgba(255, 0, 255, 0.1);
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-section {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(255, 0, 255, 0.1);
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #ff00ff;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255, 0, 255, 0.3);
+            border-radius: 8px;
+            background: #2d2d2d;
+            color: white;
+            font-size: 16px;
+        }
+        button {
+            background: linear-gradient(90deg, #ff00ff, #ff69b4);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            position: relative;
+            width: 100%;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 0, 255, 0.3);
+        }
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .result-section {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(255, 0, 255, 0.1);
+            display: none;
+        }
+        .result-section.show {
+            display: block;
+        }
+        .result-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #2d2d2d;
+            border-radius: 8px;
+        }
+        .result-label {
+            color: #ff00ff;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .result-value {
+            font-size: 1.2em;
+        }
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #ff00ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .back-button:hover {
+            color: #ff69b4;
+        }
+        .error-message {
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff4444;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        .btn-loader {
+            display: none;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Simple Linear Regression</h1>
+        <p>Predict Player Market Value based on Goals Scored</p>
+    </div>
+
+    <div class="container">
+        <a href="{% url 'index' %}" class="back-button">← Back to Home</a>
+
+        <div class="form-section">
+            <form id="predictionForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="goals_scored">Number of Goals Scored:</label>
+                    <input type="number" id="goals_scored" name="goals_scored" required min="0" step="0.1">
+                </div>
+                <button type="submit" id="submitBtn">
+                    <span class="btn-text">Predict Market Value</span>
+                    <span class="btn-loader">Processing...</span>
+                </button>
+            </form>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="result-section" id="resultSection">
+            <h2>Prediction Results</h2>
+            <div class="result-item">
+                <div class="result-label">Predicted Market Value:</div>
+                <div class="result-value" id="predictedValue">$0M</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Model Accuracy (R² Score):</div>
+                <div class="result-value" id="r2Score">0.0000</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Model Equation:</div>
+                <div class="result-value" id="modelEquation">y = 0x + 0</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading state
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const btnLoader = submitBtn.querySelector('.btn-loader');
+            btnText.style.display = 'none';
+            btnLoader.style.display = 'block';
+            submitBtn.disabled = true;
+            
+            // Hide any previous error message
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.style.display = 'none';
+            
+            const formData = new FormData(this);
+            
+            fetch('{% url "slr" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                document.getElementById('predictedValue').textContent = `$${data.predicted_value}M`;
+                document.getElementById('r2Score').textContent = data.r2_score;
+                document.getElementById('modelEquation').textContent = `y = ${data.slope}x + ${data.intercept}`;
+                document.getElementById('resultSection').classList.add('show');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorMessage.textContent = error.message || 'An error occurred while making the prediction.';
+                errorMessage.style.display = 'block';
+            })
+            .finally(() => {
+                // Reset button state
+                btnText.style.display = 'block';
+                btnLoader.style.display = 'none';
+                submitBtn.disabled = false;
+            });
+        });
+    </script>
+</body>
+</html> 

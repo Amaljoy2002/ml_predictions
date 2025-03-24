@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Prediction System</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .header {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 15px rgba(255, 0, 255, 0.1);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.8rem;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(255, 0, 255, 0.3);
+            color: #ff00ff;
+        }
+        .models-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .row {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .model-div {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 4px 15px rgba(255, 0, 255, 0.1);
+            flex: 1;
+            max-width: 350px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 0, 255, 0.1);
+        }
+        .model-div::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #ff00ff, #ff69b4);
+        }
+        .model-div:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 25px rgba(255, 0, 255, 0.2);
+            border-color: rgba(255, 0, 255, 0.3);
+        }
+        .model-div h2 {
+            margin: 0 0 15px 0;
+            color: #ff00ff;
+            font-size: 1.6rem;
+            font-weight: 600;
+        }
+        .model-div p {
+            margin: 0;
+            color: #cccccc;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        .model-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #ff00ff;
+        }
+        @media (max-width: 768px) {
+            .row {
+                flex-direction: column;
+                align-items: center;
+            }
+            .model-div {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Football Prediction System</h1>
+    </div>
+    
+    <div class="models-container">
+        <div class="row">
+            <div class="model-div" onclick="window.location.href='slr'">
+                <div class="model-icon">📈</div>
+                <h2>Simple Linear Regression</h2>
+                <p>Predict outcomes based on a single variable relationship</p>
+            </div>
+
+            <div class="model-div" onclick="window.location.href='mlr'">
+                <div class="model-icon">📊</div>
+                <h2>Multiple Linear Regression</h2>
+                <p>Analyze multiple variables for complex predictions</p>
+            </div>
+
+            <div class="model-div" onclick="window.location.href='logistic'">
+                <div class="model-icon">🎯</div>
+                <h2>Logistic Regression</h2>
+                <p>Classify match outcomes with probability</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="model-div" onclick="window.location.href='polynomial'">
+                <div class="model-icon">🔄</div>
+                <h2>Polynomial Regression</h2>
+                <p>Capture non-linear relationships in data</p>
+            </div>
+
+            <div class="model-div" onclick="window.location.href='knn'">
+                <div class="model-icon">👥</div>
+                <h2>K-Nearest Neighbors</h2>
+                <p>Classify based on similar historical matches</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

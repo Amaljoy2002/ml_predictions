@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-c1alxbt+a83l6$cg5ozwh&992(0+0gno4l-^$u58yntox$++^d
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['ml-predictions-rf5n.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['ml-predictions-rf5n.onrender.com', 'localhost', '127.0.0.1']
 
 
 # Application definition

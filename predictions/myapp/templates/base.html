@@ -73,17 +73,7 @@
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="navbar-content">
-            <a href="/" class="navbar-brand">Football Predictions</a>
-            <div class="nav-links">
-                <a href="/" {% if request.path == '/' %}class="active"{% endif %}>Home</a>
-                <a href="/slr/" {% if request.path == '/slr/' %}class="active"{% endif %}>SLR</a>
-                <a href="/mlr/" {% if request.path == '/mlr/' %}class="active"{% endif %}>MLR</a>
-                <a href="/logistic/" {% if request.path == '/logistic/' %}class="active"{% endif %}>Logistic</a>
-            </div>
-        </div>
-    </nav>
+   
 
     <main>
         {% block content %}

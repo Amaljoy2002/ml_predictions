@@ -24,4 +24,5 @@ urlpatterns = [
     path('slr/', views.slr, name='slr'),
     path('mlr/', views.mlr, name='mlr'),
     path('logistic/', views.logistic, name='logistic'),
+    path('polynomial/', views.polynomial, name='polynomial'),
 ]

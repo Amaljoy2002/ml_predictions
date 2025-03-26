@@ -1,0 +1,28 @@
+Data loaded successfully!
+Training set shape: (36, 7)
+Testing set shape: (9, 7)
+
+Model Performance:
+Training Accuracy: 1.0000
+Testing Accuracy: 1.0000
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       1.00      1.00      1.00         9
+
+    accuracy                           1.00         9
+   macro avg       1.00      1.00      1.00         9
+weighted avg       1.00      1.00      1.00         9
+
+
+Model exported successfully to D:\ML_MODELS\predictions\myapp\knn_model\knn_model.pkl
+
+Feature Importance (based on feature distances):
+Feature 0: 0.9167
+Feature 1: 0.8540
+Feature 2: 0.8596
+Feature 3: 0.8163
+Feature 4: 0.8535
+Feature 5: 0.8231
+Feature 6: 0.8231

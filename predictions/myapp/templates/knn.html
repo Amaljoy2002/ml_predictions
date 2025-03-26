@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="main-heading text-center mb-5">K-Nearest Neighbors - Football Prediction System</h1>
+            <div class="container">
+                <a href="{% url 'index' %}" class="back-button">← Back to Home</a>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">Pass Success Predictor</h2>
+                    <p class="text-center mb-4">Predict whether a pass will be successful based on distance, angle, and player position.</p>
+                    
+                    <form id="knnForm" class="needs-validation" novalidate>
+                        <div class="form-group mb-3">
+                            <label for="distance">Distance (meters)</label>
+                            <input type="number" class="form-control" id="distance" name="distance" required min="0" max="100" step="0.1">
+                           
+                            <div class="invalid-feedback">Please enter a valid distance between 0 and 100 meters.</div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="pass_angle">Pass Angle (degrees)</label>
+                            <input type="number" class="form-control" id="pass_angle" name="pass_angle" required min="0" max="360" step="0.1">
+                            
+                            <div class="invalid-feedback">Please enter a valid angle between 0 and 360 degrees.</div>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="position">Position</label>
+                            <select class="form-control" id="position" name="position" required>
+                                <option value="">Select position...</option>
+                                <option value="Forward">Forward</option>
+                                <option value="Midfielder">Midfielder</option>
+                                <option value="Defender">Defender</option>
+                                <option value="Goalkeeper">Goalkeeper</option>
+                            </select>
+                           
+                            <div class="invalid-feedback">Please select a position.</div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5">Predict Pass Success</button>
+                        </div>
+                    </form>
+                    
+                    <div id="result" class="mt-4" style="display: none;">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h4 class="card-title text-center mb-3">Prediction Result</h4>
+                                <div class="result-item">
+                                    <h5 class="text-center mb-3" id="predictionResult"></h5>
+                                    <p class="text-center mb-2" id="predictionValue"></p>
+                                    <p class="text-center mb-2" id="confidence"></p>
+                                    <pre class="bg-white p-3 rounded" id="explanation"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="error" class="alert alert-danger mt-4" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .header {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 15px rgba(255, 0, 255, 0.1);
+        }
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .form-section {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(255, 0, 255, 0.1);
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #ff00ff;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255, 0, 255, 0.3);
+            border-radius: 8px;
+            background: #2d2d2d;
+            color: white;
+            font-size: 16px;
+        }
+        button {
+            background: linear-gradient(90deg, #ff00ff, #ff69b4);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            position: relative;
+            width: 100%;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(255, 0, 255, 0.3);
+        }
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .result-section {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(255, 0, 255, 0.1);
+            display: none;
+        }
+        .result-section.show {
+            display: block;
+        }
+        .result-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #2d2d2d;
+            border-radius: 8px;
+        }
+        .result-label {
+            color: #ff00ff;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .result-value {
+            font-size: 1.2em;
+        }
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #ff00ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .back-button:hover {
+            color: #ff69b4;
+        }
+        .error-message {
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff4444;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+        .btn-loader {
+            display: none;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .main-heading {
+            color: #ffffff;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            padding-bottom: 1rem;
+            border-bottom: 3px solid #4a90e2;
+        }
+    </style>
+
+<script>
+document.getElementById('knnForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Reset previous results and errors
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('error').style.display = 'none';
+    
+    // Show loading state
+    const submitButton = this.querySelector('button[type="submit"]');
+    const originalText = submitButton.innerHTML;
+    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Predicting...';
+    submitButton.disabled = true;
+    
+    // Get form data
+    const formData = new FormData(this);
+    
+    // Send request
+    fetch('', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        // Update result display
+        document.getElementById('predictionResult').textContent = data.result;
+        document.getElementById('predictionValue').textContent = `Prediction Value: ${data.prediction}`;
+        document.getElementById('confidence').textContent = `Confidence: ${(data.confidence * 100).toFixed(1)}%`;
+        document.getElementById('explanation').textContent = data.explanation;
+        
+        // Show result with animation
+        const resultDiv = document.getElementById('result');
+        resultDiv.style.display = 'block';
+        resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    })
+    .catch(error => {
+        const errorDiv = document.getElementById('error');
+        errorDiv.textContent = error.message;
+        errorDiv.style.display = 'block';
+    })
+    .finally(() => {
+        // Reset button state
+        submitButton.innerHTML = originalText;
+        submitButton.disabled = false;
+    });
+});
+
+// Function to get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %} 

@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Polynomial Regression</h1>
+    <p class="description">Predict a team's final league position based on matches played and points earned.</p>
+    <div class="container">
+        <a href="{% url 'index' %}" class="back-button">← Back to Home</a>
+
+    <div class="form-container">
+        <form id="polynomialForm" class="prediction-form">
+            <div class="form-group">
+                <label for="matches">Matches Played:</label>
+                <input type="number" id="matches" name="matches" required value="38" readonly>
+                <small class="input-hint">All teams play 38 matches in a season</small>
+            </div>
+            <div class="form-group">
+                <label for="points">Points Earned:</label>
+                <input type="number" id="points" name="points" required min="0" max="114" step="1">
+                <small class="input-hint">Enter total points earned (0-114)</small>
+            </div>
+            <button type="submit" class="submit-btn">
+                <span class="btn-text">Predict Position</span>
+                <span class="loader"></span>
+            </button>
+        </form>
+    </div>
+
+    <div id="result" class="result-container" style="display: none;">
+        <h2>Prediction Results</h2>
+        <div class="result-content">
+            <div class="result-item">
+                <span class="label">Predicted League Position:</span>
+                <span id="prediction" class="value"></span>
+            </div>
+            <div class="result-item">
+                <span class="label">Explanation:</span>
+                <span id="explanation" class="value"></span>
+            </div>
+            <div class="result-item">
+                <span class="label">Model Performance:</span>
+                <span id="performance" class="value"></span>
+            </div>
+            <div class="result-item">
+                <span class="label">Model Equation:</span>
+                <span id="equation" class="value"></span>
+            </div>
+        </div>
+    </div>
+
+    <div id="error" class="error-message" style="display: none;"></div>
+</div>
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        min-height: 100vh;
+        color: white;
+    }
+
+    h1 {
+        color: #ffffff;
+        text-align: center;
+        margin-bottom: 1rem;
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+
+    .description {
+        text-align: center;
+        color: #ff00ff;
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+        line-height: 1.6;
+    }
+
+    .form-container {
+        background: #1a1a1a;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(255, 0, 255, 0.1);
+        margin-bottom: 2rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .form-container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(255, 0, 255, 0.3);
+        width: 50%; 
+    }
+    .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+    }
+
+    .prediction-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    label {
+        color: #ff00ff;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+
+    input {
+        padding: 10px;
+        border: 1px solid rgba(255, 0, 255, 0.3);
+        border-radius: 8px;
+        background: #2d2d2d;
+        color: white;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        width: 50%;
+    }
+
+    input:focus {
+        border-color: #ff69b4;
+        outline: none;
+        background: #1a1a1a;
+        box-shadow: 0 0 0 3px rgba(255, 105, 180, 0.3);
+    }
+
+    .submit-btn {
+        background: linear-gradient(90deg, #ff00ff, #ff69b4);
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        width: 100%;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .submit-btn:hover {
+        background: #ff69b4;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(255, 0, 255, 0.3);
+    }
+
+    .submit-btn:active {
+        transform: translateY(0);
+    }
+
+    .loader {
+        display: none;
+        width: 24px;
+        height: 24px;
+        border: 3px solid white;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 1s linear infinite;
+        position: absolute;
+        right: 1.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    @keyframes spin {
+        to {
+            transform: translateY(-50%) rotate(360deg);
+        }
+    }
+
+    .result-container {
+        background: #1a1a1a;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(255, 0, 255, 0.1);
+        margin-top: 2rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .result-container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(255, 0, 255, 0.3);
+    }
+
+    .result-container h2 {
+        color: #ffffff;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .result-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .result-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        background: #2d2d2d;
+        border-radius: 8px;
+        transition: transform 0.3s ease, background-color 0.3s ease;
+    }
+
+    .result-item:hover {
+        transform: translateX(5px);
+        background: #1a1a1a;
+    }
+
+    .label {
+        color: #ff00ff;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+
+    .value {
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 1.2rem;
+    }
+
+    .error-message {
+        background: rgba(255, 0, 0, 0.1);
+        color: #ff4444;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+        text-align: center;
+        font-weight: bold;
+        display: none;
+    }
+
+    .input-hint {
+        color: #ff00ff;
+        font-size: 0.9rem;
+        margin-top: 0.25rem;
+        opacity: 0.8;
+    }
+
+    input[readonly] {
+        background: #1a1a1a;
+        cursor: not-allowed;
+        opacity: 0.8;
+    }
+</style>
+
+
+<script>
+document.getElementById('polynomialForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const loader = submitBtn.querySelector('.loader');
+    const errorDiv = document.getElementById('error');
+    const resultDiv = document.getElementById('result');
+    
+    // Show loading state
+    submitBtn.disabled = true;
+    btnText.style.opacity = '0';
+    loader.style.display = 'block';
+    errorDiv.style.display = 'none';
+    resultDiv.style.display = 'none';
+    
+    try {
+        const matches = parseInt(document.getElementById('matches').value);
+        const points = parseInt(document.getElementById('points').value);
+        
+        // Validate matches
+        if (matches !== 38) {
+            throw new Error('All teams must play exactly 38 matches in a season.');
+        }
+        
+        // Validate points range
+        if (points < 0 || points > 114) {
+            throw new Error('Points must be between 0 and 114.');
+        }
+        
+        const response = await fetch('/polynomial/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                matches: matches,
+                points: points
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        // Display results
+        document.getElementById('prediction').textContent = data.prediction;
+        document.getElementById('explanation').textContent = data.explanation;
+        document.getElementById('performance').textContent = `RMSE: ${data.rmse.toFixed(2)}`;
+        document.getElementById('equation').textContent = data.equation;
+        resultDiv.style.display = 'block';
+        
+        // Scroll to results
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
+        
+    } catch (error) {
+        errorDiv.textContent = error.message;
+        errorDiv.style.display = 'block';
+    } finally {
+        // Reset button state
+        submitBtn.disabled = false;
+        btnText.style.opacity = '1';
+        loader.style.display = 'none';
+    }
+});
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %} 

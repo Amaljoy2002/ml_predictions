@@ -1,0 +1,31 @@
+Data loaded successfully!
+X_train_poly shape: (80, 9)
+X_test_poly shape: (20, 9)
+y_train shape: (80,)
+y_test shape: (20,)
+
+Training polynomial regression model...
+
+Model Performance:
+Training RMSE: 5.29
+Training R2 Score: 0.05
+Testing RMSE: 5.30
+Testing R2 Score: -0.05
+
+Model coefficients:
+Number of coefficients: 9
+Coefficient 0: -0.6379
+Coefficient 1: 1.4832
+Coefficient 2: -1.1218
+Coefficient 3: 0.4544
+Coefficient 4: 0.4029
+Coefficient 5: 0.5012
+Coefficient 6: -0.8753
+Coefficient 7: 0.2072
+Coefficient 8: -0.3785
+Intercept: 11.8194
+
+Model exported successfully as 'D:\ML_MODELS\predictions\myapp\polynomial_model\poly_regression_model.pkl'
+
+Verification: Model training completed successfully
+You can now make predictions using the polynomial regression page in the web app.
